@@ -1,24 +1,8 @@
 import React, { useState } from 'react';
-
+import { User, Todo } from './types';
 import usersFromServer from './api/users';
 import todosFromServer from './api/todos';
 import { TodoList } from './components/TodoList';
-
-// =================== Типи ===================
-interface User {
-  id: number;
-  name: string;
-  username: string;
-  email: string;
-}
-
-interface Todo {
-  id: number;
-  title: string;
-  completed: boolean;
-  userId: number;
-  user: User;
-}
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>(todosFromServer);
@@ -26,37 +10,40 @@ export const App: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<number | ''>('');
   const [errors, setErrors] = useState({ title: '', user: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
 
     const newErrors = { title: '', user: '' };
 
-    if (!title) {
-      newErrors.title = 'Please enter a title';
-    }
-
-    if (!selectedUser) {
-      newErrors.user = 'Please choose a user';
-    }
+    // Валідація
+    if (!title.trim()) newErrors.title = 'Please enter a title';
+    if (!selectedUser) newErrors.user = 'Please choose a user';
 
     setErrors(newErrors);
-    if (newErrors.title || newErrors.user) {
-      return;
-    }
+    if (newErrors.title || newErrors.user) return;
 
-    const user = usersFromServer.find(u => u.id === selectedUser)!;
+    // Знаходимо об’єкт користувача
+    const selectedUserObject = usersFromServer.find(
+      u => u.id === selectedUser
+    );
+
+    if (!selectedUserObject) return; // безпечне використання
 
     const newTodo: Todo = {
       id: todos.length ? Math.max(...todos.map(t => t.id)) + 1 : 1,
       title,
       completed: false,
-      userId: user.id,
-      user,
+      userId: selectedUserObject.id,
+      user: selectedUserObject,
     };
 
+    // Додаємо новий todo
     setTodos([...todos, newTodo]);
+
+    // Очищаємо форму
     setTitle('');
     setSelectedUser('');
+    setErrors({ title: '', user: '' });
   };
 
   return (
@@ -68,12 +55,10 @@ export const App: React.FC = () => {
             type="text"
             data-cy="titleInput"
             value={title}
-            onChange={e => {
+            onChange={event => {
               // Лише літери ua/en, цифри та пробіли
-              setTitle(e.target.value.replace(/[^a-zA-Zа-яА-Я0-9 ]/g, ''));
-              if (errors.title) {
-                setErrors({ ...errors, title: '' });
-              }
+              setTitle(event.target.value.replace(/[^a-zA-Zа-яА-Я0-9 ]/g, ''));
+              if (errors.title) setErrors({ ...errors, title: '' });
             }}
             placeholder="Enter todo title"
           />
@@ -84,19 +69,17 @@ export const App: React.FC = () => {
           <select
             data-cy="userSelect"
             value={selectedUser}
-            onChange={e => {
-              setSelectedUser(Number(e.target.value));
-              if (errors.user) {
-                setErrors({ ...errors, user: '' });
-              }
+            onChange={event => {
+              setSelectedUser(Number(event.target.value));
+              if (errors.user) setErrors({ ...errors, user: '' });
             }}
           >
             <option value="" disabled>
               Choose a user
             </option>
-            {usersFromServer.map((u: User) => (
-              <option key={u.id} value={u.id}>
-                {u.name}
+            {usersFromServer.map((user: User) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
               </option>
             ))}
           </select>

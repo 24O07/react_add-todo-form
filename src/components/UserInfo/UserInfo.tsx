@@ -1,3 +1,5 @@
+import { User } from '../../types';
+
 interface UserInfoProps {
   user: User;
 }
