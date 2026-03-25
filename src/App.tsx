@@ -7,63 +7,66 @@ import { TodoList } from './components/TodoList';
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>(todosFromServer);
   const [title, setTitle] = useState('');
-  const [selectedUser, setSelectedUser] = useState<number | ''>('');
+  const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
   const [errors, setErrors] = useState({ title: '', user: '' });
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
+    event.preventDefault(); 
 
     const newErrors = { title: '', user: '' };
 
-    // Валідація
-    if (!title.trim()) {
+    if (!title) {
       newErrors.title = 'Please enter a title';
     }
 
-    if (!selectedUser) {
+    if (!selectedUserId) {
       newErrors.user = 'Please choose a user';
     }
 
     setErrors(newErrors);
+
+    // якщо є помилки — не продовжуємо
     if (newErrors.title || newErrors.user) {
       return;
     }
 
-    // Знаходимо об’єкт користувача
-    const selectedUserObject = usersFromServer.find(user => user.id === selectedUser);
+    const selectedUser = usersFromServer.find(
+      (user: User) => user.id === selectedUserId,
+    );
 
-    if (!selectedUserObject) {
+    if (!selectedUser) {
       return;
-    } // безпечне використання
+    }
 
     const newTodo: Todo = {
       id: todos.length ? Math.max(...todos.map(todo => todo.id)) + 1 : 1,
       title,
       completed: false,
-      userId: selectedUserObject.id,
-      user: selectedUserObject,
+      userId: selectedUser.id,
+      user: selectedUser,
     };
 
-    // Додаємо новий todo
     setTodos([...todos, newTodo]);
-
-    // Очищаємо форму
     setTitle('');
-    setSelectedUser('');
-    setErrors({ title: '', user: '' });
+    setSelectedUserId('');
   };
 
   return (
     <div className="App">
       <h1>Add todo form</h1>
+
       <form onSubmit={handleSubmit}>
+
+
         <div className="field">
+          <label htmlFor="title">Todo title</label>
+
           <input
+            id="title"
             type="text"
             data-cy="titleInput"
             value={title}
             onChange={event => {
-              // Лише літери ua/en, цифри та пробіли
               setTitle(event.target.value.replace(/[^a-zA-Zа-яА-Я0-9 ]/g, ''));
               if (errors.title) {
                 setErrors({ ...errors, title: '' });
@@ -71,15 +74,24 @@ export const App: React.FC = () => {
             }}
             placeholder="Enter todo title"
           />
-          {errors.title && <span className="error">{errors.title}</span>}
+
+          {errors.title && (
+            <span className="error" data-cy="titleError">
+              {errors.title}
+            </span>
+          )}
         </div>
 
+
         <div className="field">
+          <label htmlFor="user">User</label>
+
           <select
+            id="user"
             data-cy="userSelect"
-            value={selectedUser}
+            value={selectedUserId}
             onChange={event => {
-              setSelectedUser(Number(event.target.value));
+              setSelectedUserId(Number(event.target.value));
               if (errors.user) {
                 setErrors({ ...errors, user: '' });
               }
@@ -88,13 +100,19 @@ export const App: React.FC = () => {
             <option value="" disabled>
               Choose a user
             </option>
+
             {usersFromServer.map((user: User) => (
               <option key={user.id} value={user.id}>
                 {user.name}
               </option>
             ))}
           </select>
-          {errors.user && <span className="error">{errors.user}</span>}
+
+          {errors.user && (
+            <span className="error" data-cy="userError">
+              {errors.user}
+            </span>
+          )}
         </div>
 
         <button type="submit" data-cy="submitButton">
