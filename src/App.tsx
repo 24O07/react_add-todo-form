@@ -16,21 +16,28 @@ export const App: React.FC = () => {
     const newErrors = { title: '', user: '' };
 
     // Валідація
-    if (!title.trim()) newErrors.title = 'Please enter a title';
-    if (!selectedUser) newErrors.user = 'Please choose a user';
+    if (!title.trim()) {
+      newErrors.title = 'Please enter a title';
+    }
+
+    if (!selectedUser) {
+      newErrors.user = 'Please choose a user';
+    }
 
     setErrors(newErrors);
-    if (newErrors.title || newErrors.user) return;
+    if (newErrors.title || newErrors.user) {
+      return;
+    }
 
     // Знаходимо об’єкт користувача
-    const selectedUserObject = usersFromServer.find(
-      u => u.id === selectedUser
-    );
+    const selectedUserObject = usersFromServer.find(user => user.id === selectedUser);
 
-    if (!selectedUserObject) return; // безпечне використання
+    if (!selectedUserObject) {
+      return;
+    } // безпечне використання
 
     const newTodo: Todo = {
-      id: todos.length ? Math.max(...todos.map(t => t.id)) + 1 : 1,
+      id: todos.length ? Math.max(...todos.map(todo => todo.id)) + 1 : 1,
       title,
       completed: false,
       userId: selectedUserObject.id,
@@ -58,7 +65,9 @@ export const App: React.FC = () => {
             onChange={event => {
               // Лише літери ua/en, цифри та пробіли
               setTitle(event.target.value.replace(/[^a-zA-Zа-яА-Я0-9 ]/g, ''));
-              if (errors.title) setErrors({ ...errors, title: '' });
+              if (errors.title) {
+                setErrors({ ...errors, title: '' });
+              }
             }}
             placeholder="Enter todo title"
           />
@@ -71,7 +80,9 @@ export const App: React.FC = () => {
             value={selectedUser}
             onChange={event => {
               setSelectedUser(Number(event.target.value));
-              if (errors.user) setErrors({ ...errors, user: '' });
+              if (errors.user) {
+                setErrors({ ...errors, user: '' });
+              }
             }}
           >
             <option value="" disabled>
