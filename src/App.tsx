@@ -8,14 +8,17 @@ export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>(todosFromServer);
   const [title, setTitle] = useState('');
   const [selectedUserId, setSelectedUserId] = useState<number | ''>('');
-  const [errors, setErrors] = useState({ title: '', user: '' });
+  const [errors, setErrors] = useState<{ title: string; user: string }>({
+    title: '',
+    user: '',
+  });
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault(); 
+    event.preventDefault();
 
     const newErrors = { title: '', user: '' };
 
-    if (!title) {
+    if (!title.trim()) {
       newErrors.title = 'Please enter a title';
     }
 
@@ -25,7 +28,6 @@ export const App: React.FC = () => {
 
     setErrors(newErrors);
 
-    // якщо є помилки — не продовжуємо
     if (newErrors.title || newErrors.user) {
       return;
     }
@@ -56,8 +58,6 @@ export const App: React.FC = () => {
       <h1>Add todo form</h1>
 
       <form onSubmit={handleSubmit}>
-
-
         <div className="field">
           <label htmlFor="title">Todo title</label>
 
@@ -67,9 +67,10 @@ export const App: React.FC = () => {
             data-cy="titleInput"
             value={title}
             onChange={event => {
-              setTitle(event.target.value.replace(/[^a-zA-Zа-яА-Я0-9 ]/g, ''));
+              setTitle(event.target.value);
+
               if (errors.title) {
-                setErrors({ ...errors, title: '' });
+                setErrors(prev => ({ ...prev, title: '' }));
               }
             }}
             placeholder="Enter todo title"
@@ -82,7 +83,6 @@ export const App: React.FC = () => {
           )}
         </div>
 
-
         <div className="field">
           <label htmlFor="user">User</label>
 
@@ -91,9 +91,12 @@ export const App: React.FC = () => {
             data-cy="userSelect"
             value={selectedUserId}
             onChange={event => {
-              setSelectedUserId(Number(event.target.value));
+              const value = event.target.value;
+
+              setSelectedUserId(value === '' ? '' : Number(value));
+
               if (errors.user) {
-                setErrors({ ...errors, user: '' });
+                setErrors(prev => ({ ...prev, user: '' }));
               }
             }}
           >
