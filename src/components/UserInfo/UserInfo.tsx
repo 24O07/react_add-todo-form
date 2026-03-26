@@ -5,7 +5,6 @@ interface UserInfoProps {
 }
 
 export const UserInfo: React.FC<UserInfoProps> = ({ user }) => {
-
   if (!user) {
     return null;
   }
